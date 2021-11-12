@@ -72,21 +72,25 @@ def rsqr_metric(predicted, actual):
     return 1-mean_error
 
 
+def train_test_split(X, y, train_start, train_end, test_start, test_end):
+    return X[train_start:train_end, 2:], y[train_start:train_end, 2:].flatten(), \
+           X[test_start:test_end, 2:], y[test_start:test_end, 2:].flatten()
+
+
 if __name__ == '__main__':
     X_df = pd.read_csv("full_predictor_set_bfill.csv", index_col=0)
     y_df = pd.read_csv("returns.csv", index_col=0)
 
-    X = X_df.to_numpy()
-    y = y_df.to_numpy()
+    X_all = X_df.to_numpy()
+    y_all = y_df.to_numpy()
 
-    print(X.shape)
-    print(y.shape)
+    print(X_all.shape)
+    print(y_all.shape)
 
-    X_train = X[0:1744000,2:]
-    y_train = y[0:1744000,2:].flatten()
+    X_train, y_train, X_test, y_test = train_test_split(X_all, y_all, 0, 2100000, 2100001, 2187340)
 
-    print(X_train.shape)
-    print(y_train.shape)
+    print(X_train.shape, y_train.shape)
+    print(X_test.shape, y_test.shape)
 
     l2_model = CustomLinearModel(
         loss_function=ordinary_least_square_loss,
