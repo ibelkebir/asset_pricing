@@ -3,8 +3,13 @@ import pandas as pd
 from scipy.optimize import minimize
 
 
+def train_test_split(X, y, train_start, train_end, test_start, test_end):
+    return X[train_start:train_end, 2:], y[train_start:train_end, 2:].flatten(), \
+           X[test_start:test_end, 2:], y[test_start:test_end, 2:].flatten()
+
+
 def ordinary_least_square_loss(predicted, actual, sample_weights=None):
-    sum_squared_error = np.sum((predicted - actual)**2)
+    sum_squared_error = np.sum((predicted - actual) ** 2)
     mean_error = sum_squared_error / float(len(actual))
     return mean_error
 
@@ -38,7 +43,7 @@ class CustomLinearModel:
 
     def elastic_net_penalty(self, coeff):
         self.coeff = coeff
-        penalty = (1-self.rho) * self.l1_regularization() + self.rho * self.l2_regularization()
+        penalty = (1 - self.rho) * self.l1_regularization() + self.rho * self.l2_regularization()
         return self.model_error() + penalty
 
     def l2_regularization(self):
@@ -67,27 +72,36 @@ class CustomLinearModel:
 
 # Calculate root mean squared error
 def rsqr_metric(predicted, actual):
-    sum_error = np.sum((predicted - actual)**2)
+    sum_error = np.sum((predicted - actual) ** 2)
     mean_error = sum_error / np.sum(actual ** 2)
-    return 1-mean_error
+    return 1 - mean_error
 
 
-def train_test_split(X, y, train_start, train_end, test_start, test_end):
-    return X[train_start:train_end, 2:], y[train_start:train_end, 2:].flatten(), \
-           X[test_start:test_end, 2:], y[test_start:test_end, 2:].flatten()
+def recursive_train(model, X, y, rolling_size):
+    min_error = float('inf')
+    all_errors = []
+    coefficients = None
+
+    # During each iteration, fit the model with train set, and then test on the validation set
+    # Record the output error in all_errors
+    # Compare with the current model's error with the min_error
+    # if current error leq than min_error, update the min with the current one and update the coefficients
+    # else proceed to next iteration
+
+    return min_error, all_erros, coefficients
 
 
 if __name__ == '__main__':
     X_df = pd.read_csv("full_predictor_set_bfill.csv", index_col=0)
     y_df = pd.read_csv("returns.csv", index_col=0)
 
-    X_all = X_df.to_numpy()
-    y_all = y_df.to_numpy()
+    X = X_df.to_numpy()
+    y = y_df.to_numpy()
 
-    print(X_all.shape)
-    print(y_all.shape)
+    print(X.shape)
+    print(y.shape)
 
-    X_train, y_train, X_test, y_test = train_test_split(X_all, y_all, 0, 2100000, 2100001, 2187340)
+    X_train, y_train, X_test, y_test = train_test_split(X, y, 0, 2100000, 2100001, len(X) - 1)
 
     print(X_train.shape, y_train.shape)
     print(X_test.shape, y_test.shape)
@@ -99,3 +113,4 @@ if __name__ == '__main__':
     l2_model.fit()
     print(l2_model.coeff)
     print(rsqr_metric(np.dot(X_train, l2_model.coeff), y_train))
+    # Takes about a minute to compete one fit
