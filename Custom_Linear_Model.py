@@ -9,37 +9,13 @@ def ordinary_least_square_loss(predicted, actual, sample_weights=None):
     return mean_error
 
 
-def mean_absolute_percentage_loss(y_pred, y_true, sample_weights=None):
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-    assert len(y_true) == len(y_pred)
-
-    if np.any(y_true == 0):
-        print("Found zeroes in y_true. MAPE undefined. Removing from set...")
-        idx = np.where(y_true == 0)
-        y_true = np.delete(y_true, idx)
-        y_pred = np.delete(y_pred, idx)
-        if type(sample_weights) != type(None):
-            sample_weights = np.array(sample_weights)
-            sample_weights = np.delete(sample_weights, idx)
-
-    if type(sample_weights) == type(None):
-        return (np.mean(np.abs((y_true - y_pred) / y_true)) * 100)
-    else:
-        sample_weights = np.array(sample_weights)
-        assert len(sample_weights) == len(y_true)
-        return (100 / sum(sample_weights) * np.dot(
-            sample_weights, (np.abs((y_true - y_pred) / y_true))
-        ))
-
-
 class CustomLinearModel:
     """
-    Linear model: Y = XB, fit by minimizing the provided loss_function with L2 regularization
+    Linear model: Y = XC, fit by minimizing the provided loss_function
     """
 
     def __init__(self, loss_function=ordinary_least_square_loss,
-                 X=None, Y=None, sample_weights=None, coeff_init=None, regularization=0.00012, rho=1):
+                 X=None, Y=None, sample_weights=None, coeff_init=None, regularization=0, rho=1):
         self.regularization = regularization
         self.coeff = None
         self.loss_function = loss_function
@@ -62,7 +38,8 @@ class CustomLinearModel:
 
     def elastic_net_penalty(self, coeff):
         self.coeff = coeff
-        return self.model_error() + (1-self.rho) * self.l1_regularization() + self.rho * self.l2_regularization()
+        penalty = (1-self.rho) * self.l1_regularization() + self.rho * self.l2_regularization()
+        return self.model_error() + penalty
 
     def l2_regularization(self):
         return sum(self.regularization * np.array(self.coeff) ** 2)
@@ -95,7 +72,6 @@ def rsqr_metric(predicted, actual):
     return 1-mean_error
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     X_df = pd.read_csv("full_predictor_set_bfill.csv", index_col=0)
     y_df = pd.read_csv("returns.csv", index_col=0)
@@ -118,5 +94,4 @@ if __name__ == '__main__':
     )
     l2_model.fit()
     print(l2_model.coeff)
-
     print(rsqr_metric(np.dot(X_train, l2_model.coeff), y_train))
