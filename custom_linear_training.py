@@ -136,7 +136,7 @@ if __name__ == '__main__':
     print(X.shape)
     print(y.shape)
 
-    max_r2, all_r2, coefficients = train(X, y)
+    min_error, all_errors, coefficients = train(X, y)
 
-    print(max_r2)
+    print(min_error)
     # Takes about a minute to compete one fit
