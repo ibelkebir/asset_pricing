@@ -82,7 +82,7 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
     all_errors = []
     coefficients = None
     if recursive:
-        for i in range(196500,201900,100):
+        for i in range(200000,201900,100):
             x_train = X[X["level_1"] < i].to_numpy()[:,2:]
             y_train = y[y["level_1"] < i].to_numpy()[:,2:]
             x_test = X[(X["level_1"] >= i) & (X["level_1"] < i + 100)].to_numpy()[:,2:]
@@ -103,7 +103,7 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
                 min_error = error
                 coefficients = model.coeff
     else:
-        i = 196307
+        i = 200000
         while i + n*100 < 201900:
             x_train = X[(X["level_1"] >= i) & (X["level_1"] < i + n*100)].to_numpy()[:,2:]
             y_train = y[(y["level_1"] >= i) & (y["level_1"] < i + n*100)].to_numpy()[:,2:]
