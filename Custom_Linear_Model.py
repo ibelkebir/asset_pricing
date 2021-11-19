@@ -88,7 +88,7 @@ def recursive_train(model, X, y, rolling_size):
     # if current error leq than min_error, update the min with the current one and update the coefficients
     # else proceed to next iteration
 
-    return min_error, all_erros, coefficients
+    return min_error, all_errors, coefficients
 
 
 if __name__ == '__main__':
@@ -112,5 +112,5 @@ if __name__ == '__main__':
     )
     l2_model.fit()
     print(l2_model.coeff)
-    print(rsqr_metric(np.dot(X_train, l2_model.coeff), y_train))
-    # Takes about a minute to compete one fit
+    print(rsqr_metric(l2_model.predict(X_train), y_train))
+    print(rsqr_metric(l2_model.predict(X_test), y_test))

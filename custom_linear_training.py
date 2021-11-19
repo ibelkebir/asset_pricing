@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+from itertools import product
 
 
 def train_test_split(X, y, train_start, train_end, test_start, test_end):
@@ -87,6 +88,7 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
             y_train = y[y["level_1"] < i].to_numpy()[:,2:]
             x_test = X[(X["level_1"] >= i) & (X["level_1"] < i + 100)].to_numpy()[:,2:]
             y_test = y[(y["level_1"] >= i) & (y["level_1"] < i + 100)].to_numpy()[:,2:]
+            print(len(x_train), len(x_test))
 
             model = CustomLinearModel(
                 loss_function=loss_function,
@@ -109,6 +111,7 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
             y_train = y[(y["level_1"] >= i) & (y["level_1"] < i + n*100)].to_numpy()[:,2:]
             x_test = X[(X["level_1"] >= i + n*100) & (X["level_1"] < i + (n+1)*100)].to_numpy()[:,2:]
             y_test = y[(y["level_1"] >= i + n*100) & (y["level_1"] < i + (n+1)*100)].to_numpy()[:,2:]
+            print(len(x_train), len(x_test))
 
             model = CustomLinearModel(
                 loss_function=loss_function,
@@ -129,6 +132,18 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
     return min_error, all_errors, coefficients
 
 
+def hyperparameter_tuning(regularization_lst, rho_lst, X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss, sample_weights=None, coeff_init=None):
+    # tune the best set of hyperparameters
+    optimal_min_error = float('inf')
+    optimal_coefficients = None
+    for params in product(regularization_lst, rho_lst):
+        min_error, all_errors, coefficients = train(X, y, recursive, n, loss_function, sample_weights, coeff_init, regularization=params[0], rho=params[1])
+        if min_error < optimal_min_error:
+            optimal_min_error = min_error
+            optimal_coefficients = coefficients
+    return optimal_min_error, optimal_coefficients
+
+
 if __name__ == '__main__':
     X = pd.read_csv("full_predictor_set_bfill.csv", index_col=0)
     y = pd.read_csv("returns.csv", index_col=0)
@@ -139,4 +154,3 @@ if __name__ == '__main__':
     min_error, all_errors, coefficients = train(X, y)
 
     print(min_error)
-    # Takes about a minute to compete one fit
