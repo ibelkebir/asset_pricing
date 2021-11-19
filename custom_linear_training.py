@@ -94,7 +94,7 @@ def train(X, y, recursive=False, n=10, loss_function=ordinary_least_square_loss,
                 coeff_init=coeff_init,
                 regularization=regularization,
                 rho=rho,
-                X=x_train, Y=y_train
+                X=x_train, Y=y_train.flatten()
             )
             model.fit()
             error = ordinary_least_square_loss(np.dot(x_test, model.coeff), y_test)
